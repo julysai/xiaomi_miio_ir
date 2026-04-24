@@ -25,10 +25,10 @@ KNOWN_IR_MODELS = {
 }
 
 MODEL_LABELS = {
-    "KTBL02LM": "Xiaomi Universal IR Remote",
-    "ktbl02lm": "Xiaomi Universal IR Remote",
-    "chuangmi.ir.v2": "Xiaomi Universal IR Remote",
-    "chuangmi.remote.v2": "Xiaomi Universal IR Remote",
-    "chuangmi.remote.h102a03": "Xiaomi Universal IR Remote",
+    "KTBL02LM": "Mijia Universal Remote Controller",
+    "ktbl02lm": "Mijia Universal Remote Controller",
+    "chuangmi.ir.v2": "Mijia Universal Remote Controller",
+    "chuangmi.remote.v2": "Mijia Universal Remote Controller",
+    "chuangmi.remote.h102a03": "Mijia Universal Remote Controller",
     "lumi.acpartner.mcn02": "Xiaomi Mi Air Conditioning Companion 2",
 }

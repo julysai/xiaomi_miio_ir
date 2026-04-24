@@ -4,8 +4,18 @@ Home Assistant custom integration for Xiaomi IR bridges that expose the raw `miI
 
 ## Supported devices
 
-- **KTBL02LM** and related Chuangmi-family remotes: `chuangmi.ir.v2`, `chuangmi.remote.v2`, `chuangmi.remote.h102a03`
-- **lumi.acpartner.mcn02** / Xiaomi Mi Air Conditioning Companion 2
+### Confirmed working
+
+- **Mijia Universal Remote Controller** (`KTBL02LM`)
+- **Chuangmi IR Remote**: `chuangmi.ir.v2`
+- **Chuangmi Universal Remote**: `chuangmi.remote.v2`
+- **Xiaomi Mi Air Conditioning Companion 2**: `lumi.acpartner.mcn02`
+
+### Likely compatible
+
+- `chuangmi.remote.h102a03`
+
+The integration works with devices that expose the raw `miIO.ir_learn`, `miIO.ir_read`, and `miIO.ir_play` commands.
 
 ## What it provides
 
