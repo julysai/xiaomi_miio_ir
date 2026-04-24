@@ -29,9 +29,11 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import (
     CONF_MODEL,
+    CONF_SEND_SOCKET_TIMEOUT,
     CONF_SLOT,
     CONF_SOCKET_TIMEOUT,
     DEFAULT_NAME,
+    DEFAULT_SEND_SOCKET_TIMEOUT,
     DEFAULT_SOCKET_TIMEOUT,
     DEFAULT_SLOT,
     DEFAULT_TIMEOUT,
@@ -54,10 +56,19 @@ async def async_setup_entry(
         CONF_SOCKET_TIMEOUT,
         entry.data.get(CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT),
     )
+    send_socket_timeout = entry.options.get(
+        CONF_SEND_SOCKET_TIMEOUT,
+        entry.data.get(CONF_SEND_SOCKET_TIMEOUT, DEFAULT_SEND_SOCKET_TIMEOUT),
+    )
     device = XiaomiMiioIrDevice(
         entry.data[CONF_HOST],
         entry.data[CONF_TOKEN],
         socket_timeout=socket_timeout,
+    )
+    send_device = XiaomiMiioIrDevice(
+        entry.data[CONF_HOST],
+        entry.data[CONF_TOKEN],
+        socket_timeout=send_socket_timeout,
     )
 
     try:
@@ -75,6 +86,7 @@ async def async_setup_entry(
     entity = XiaomiMiioIrRemote(
         hass=hass,
         device=device,
+        send_device=send_device,
         host=entry.data[CONF_HOST],
         name=friendly_name,
         model=model,
@@ -86,6 +98,7 @@ async def async_setup_entry(
             CONF_TIMEOUT, entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)
         ),
         socket_timeout=socket_timeout,
+        send_socket_timeout=send_socket_timeout,
     )
 
     hass.data[DOMAIN][entry.entry_id]["entity"] = entity
@@ -112,6 +125,7 @@ class XiaomiMiioIrRemote(RemoteEntity):
         self,
         hass: HomeAssistant,
         device: XiaomiMiioIrDevice,
+        send_device: XiaomiMiioIrDevice,
         host: str,
         name: str,
         model: str,
@@ -120,11 +134,13 @@ class XiaomiMiioIrRemote(RemoteEntity):
         hardware_version: str | None,
         slot: int,
         timeout: int,
-        socket_timeout: int,
+        socket_timeout: float,
+        send_socket_timeout: float,
     ) -> None:
         """Initialize the remote."""
         self.hass = hass
         self._device = device
+        self._send_device = send_device
         self._host = host
         self._model = model
         self._firmware_version = firmware_version
@@ -132,6 +148,7 @@ class XiaomiMiioIrRemote(RemoteEntity):
         self._slot = slot
         self._timeout = timeout
         self._socket_timeout = socket_timeout
+        self._send_socket_timeout = send_socket_timeout
         self._last_learned_code: str | None = None
         self._last_learned_device: str | None = None
         self._last_learned_command: list[str] | None = None
@@ -154,6 +171,7 @@ class XiaomiMiioIrRemote(RemoteEntity):
             "default_slot": self._slot,
             "learn_timeout": self._timeout,
             "socket_timeout": self._socket_timeout,
+            "send_socket_timeout": self._send_socket_timeout,
             "last_learned_code": self._last_learned_code,
             "last_learned_device": self._last_learned_device,
             "last_learned_command": self._last_learned_command,
@@ -193,7 +211,7 @@ class XiaomiMiioIrRemote(RemoteEntity):
 
         for _ in range(num_repeats):
             for payload in commands:
-                await self._async_device_call(self._device.play, payload)
+                await self._async_device_call(self._send_device.play, payload)
                 if delay:
                     await asyncio.sleep(delay)
 

@@ -24,7 +24,7 @@ The integration works with devices that expose the raw `miIO.ir_learn`, `miIO.ir
 - Standard `remote.learn_command` support
 - Backward-compatible `remote.remote_learn_command` with explicit slot selection
 - Entity attributes for the last learned code, device, and command name
-- UI configuration for the default learn timeout and miIO socket timeout
+- UI configuration for the default learn timeout plus separate send and learn/read miIO socket timeouts
 
 ## Install
 
@@ -47,9 +47,26 @@ The setup flow asks for:
 - **Name**: optional entity name
 - **Default learn timeout**: default timeout used by learning services
 - **Default learn slot**: storage slot used by the custom slot-based learn service
-- **miIO socket timeout**: per-request timeout used for each raw miIO call to the device
+- **Learn/read miIO socket timeout**: per-request timeout used for `info`, `learn`, and `read`
+- **Send miIO socket timeout**: per-request timeout used for `remote.send_command`
 
-After setup, open **Settings -> Devices & Services -> Xiaomi Miio IR -> Configure** to change the default learn timeout and miIO socket timeout.
+After setup, open **Settings -> Devices & Services -> Xiaomi Miio IR -> Configure** to change the default learn timeout and both socket timeouts.
+
+### Timeout parameters
+
+The integration exposes three different timing controls:
+
+| Setting | Scope | Used by | Default |
+| --- | --- | --- | --- |
+| **Default learn timeout** | Full learn flow | `remote.learn_command`, `remote.remote_learn_command` | `30` seconds |
+| **Learn/read miIO socket timeout** | Single miIO request | `info()`, `learn()`, `read()` | `30` seconds |
+| **Send miIO socket timeout** | Single miIO request | `remote.send_command` / `miIO.ir_play` | `0.2` seconds |
+
+In short:
+
+- **`Default learn timeout`** controls how long the whole learning process may run.
+- **`Learn/read miIO socket timeout`** controls how long one miIO learn/read request may block.
+- **`Send miIO socket timeout`** controls how long one send-command request may block before failing fast.
 
 ## Learning commands
 
@@ -127,5 +144,5 @@ data:
 
 ## Notes
 
-- The integration defaults the miIO socket timeout to 1 second to cut the long initial wait on send and learn operations.
+- The integration defaults the send miIO socket timeout to 0.2 seconds and the learn/read timeout to 30 seconds.
 - `remote.learn_command` uses the configured default slot; use `remote.remote_learn_command` if you need per-call slot control.

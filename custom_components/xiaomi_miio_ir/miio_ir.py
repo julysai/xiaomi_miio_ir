@@ -37,7 +37,7 @@ class XiaomiMiioIrDevice:
         self,
         host: str,
         token: str,
-        socket_timeout: int = DEFAULT_SOCKET_TIMEOUT,
+        socket_timeout: float = DEFAULT_SOCKET_TIMEOUT,
     ) -> None:
         """Initialize the raw miIO client."""
         self.host = host

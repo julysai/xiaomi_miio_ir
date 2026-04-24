@@ -14,9 +14,11 @@ from homeassistant.exceptions import HomeAssistantError
 
 from .const import (
     CONF_MODEL,
+    CONF_SEND_SOCKET_TIMEOUT,
     CONF_SLOT,
     CONF_SOCKET_TIMEOUT,
     DEFAULT_NAME,
+    DEFAULT_SEND_SOCKET_TIMEOUT,
     DEFAULT_SLOT,
     DEFAULT_SOCKET_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -31,6 +33,11 @@ class CannotConnect(HomeAssistantError):
 
 class UnsupportedModel(HomeAssistantError):
     """Error to indicate the device is not IR-capable."""
+
+
+def _socket_timeout_schema() -> vol.All:
+    """Build a socket timeout validator."""
+    return vol.All(vol.Coerce(float), vol.Range(min=0.1))
 
 
 def _user_schema(user_input: dict[str, Any] | None = None) -> vol.Schema:
@@ -55,7 +62,13 @@ def _user_schema(user_input: dict[str, Any] | None = None) -> vol.Schema:
             vol.Optional(
                 CONF_SOCKET_TIMEOUT,
                 default=user_input.get(CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT),
-            ): vol.All(int, vol.Range(min=1)),
+            ): _socket_timeout_schema(),
+            vol.Optional(
+                CONF_SEND_SOCKET_TIMEOUT,
+                default=user_input.get(
+                    CONF_SEND_SOCKET_TIMEOUT, DEFAULT_SEND_SOCKET_TIMEOUT
+                ),
+            ): _socket_timeout_schema(),
         }
     )
 
@@ -124,6 +137,9 @@ class XiaomiMiioIrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_SOCKET_TIMEOUT: user_input.get(
                             CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT
                         ),
+                        CONF_SEND_SOCKET_TIMEOUT: user_input.get(
+                            CONF_SEND_SOCKET_TIMEOUT, DEFAULT_SEND_SOCKET_TIMEOUT
+                        ),
                         CONF_MODEL: info[CONF_MODEL],
                     }
                 )
@@ -166,6 +182,12 @@ class XiaomiMiioIrOptionsFlow(config_entries.OptionsFlowWithReload):
                 CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT
             ),
         )
+        current_send_socket_timeout = self._config_entry.options.get(
+            CONF_SEND_SOCKET_TIMEOUT,
+            self._config_entry.data.get(
+                CONF_SEND_SOCKET_TIMEOUT, DEFAULT_SEND_SOCKET_TIMEOUT
+            ),
+        )
 
         return self.async_show_form(
             step_id="init",
@@ -178,7 +200,11 @@ class XiaomiMiioIrOptionsFlow(config_entries.OptionsFlowWithReload):
                     vol.Required(
                         CONF_SOCKET_TIMEOUT,
                         default=current_socket_timeout,
-                    ): vol.All(int, vol.Range(min=1)),
+                    ): _socket_timeout_schema(),
+                    vol.Required(
+                        CONF_SEND_SOCKET_TIMEOUT,
+                        default=current_send_socket_timeout,
+                    ): _socket_timeout_schema(),
                 }
             ),
         )
