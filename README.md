@@ -24,7 +24,7 @@ The integration works with devices that expose the raw `miIO.ir_learn`, `miIO.ir
 - Standard `remote.learn_command` support
 - Backward-compatible `remote.remote_learn_command` with explicit slot selection
 - Entity attributes for the last learned code, device, and command name
-- UI configuration for the default learn timeout
+- UI configuration for the default learn timeout and miIO socket timeout
 
 ## Install
 
@@ -47,8 +47,9 @@ The setup flow asks for:
 - **Name**: optional entity name
 - **Default learn timeout**: default timeout used by learning services
 - **Default learn slot**: storage slot used by the custom slot-based learn service
+- **miIO socket timeout**: per-request timeout used for each raw miIO call to the device
 
-After setup, open **Settings -> Devices & Services -> Xiaomi Miio IR -> Configure** to change the default learn timeout.
+After setup, open **Settings -> Devices & Services -> Xiaomi Miio IR -> Configure** to change the default learn timeout and miIO socket timeout.
 
 ## Learning commands
 
@@ -64,10 +65,9 @@ data:
   device: tv
   command:
     - power
-  timeout: 30
 ```
 
-This uses the entity's configured default slot. When a code is captured, the integration:
+If `timeout` is omitted, the integration uses the timeout configured in the integration UI. This uses the entity's configured default slot. When a code is captured, the integration:
 
 - shows a persistent notification
 - updates `last_learned_code`
@@ -84,8 +84,9 @@ target:
   entity_id: remote.xiaomi_miio_ir_remote
 data:
   slot: 30
-  timeout: 30
 ```
+
+If `timeout` is omitted here, the integration also uses the timeout configured in the integration UI.
 
 ## Sending commands
 
@@ -126,5 +127,5 @@ data:
 
 ## Notes
 
-- The integration uses a reduced miIO socket timeout to cut the long initial wait on the first send attempt.
+- The integration defaults the miIO socket timeout to 1 second to cut the long initial wait on send and learn operations.
 - `remote.learn_command` uses the configured default slot; use `remote.remote_learn_command` if you need per-call slot control.

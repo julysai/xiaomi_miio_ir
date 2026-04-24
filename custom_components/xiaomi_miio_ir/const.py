@@ -6,11 +6,12 @@ DOMAIN = "xiaomi_miio_ir"
 
 CONF_SLOT = "slot"
 CONF_MODEL = "model"
+CONF_SOCKET_TIMEOUT = "socket_timeout"
 
 DEFAULT_NAME = "Xiaomi Miio IR Remote"
 DEFAULT_SLOT = 1
 DEFAULT_TIMEOUT = 30
-MIIO_SOCKET_TIMEOUT = 2
+DEFAULT_SOCKET_TIMEOUT = 1
 
 SERVICE_LEARN = "remote_learn_command"
 

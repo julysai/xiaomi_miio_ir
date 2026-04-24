@@ -30,7 +30,9 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .const import (
     CONF_MODEL,
     CONF_SLOT,
+    CONF_SOCKET_TIMEOUT,
     DEFAULT_NAME,
+    DEFAULT_SOCKET_TIMEOUT,
     DEFAULT_SLOT,
     DEFAULT_TIMEOUT,
     DOMAIN,
@@ -48,7 +50,15 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Xiaomi Miio IR remote."""
-    device = XiaomiMiioIrDevice(entry.data[CONF_HOST], entry.data[CONF_TOKEN])
+    socket_timeout = entry.options.get(
+        CONF_SOCKET_TIMEOUT,
+        entry.data.get(CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT),
+    )
+    device = XiaomiMiioIrDevice(
+        entry.data[CONF_HOST],
+        entry.data[CONF_TOKEN],
+        socket_timeout=socket_timeout,
+    )
 
     try:
         info = await hass.async_add_executor_job(device.info)
@@ -75,6 +85,7 @@ async def async_setup_entry(
         timeout=entry.options.get(
             CONF_TIMEOUT, entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)
         ),
+        socket_timeout=socket_timeout,
     )
 
     hass.data[DOMAIN][entry.entry_id]["entity"] = entity
@@ -109,6 +120,7 @@ class XiaomiMiioIrRemote(RemoteEntity):
         hardware_version: str | None,
         slot: int,
         timeout: int,
+        socket_timeout: int,
     ) -> None:
         """Initialize the remote."""
         self.hass = hass
@@ -119,6 +131,7 @@ class XiaomiMiioIrRemote(RemoteEntity):
         self._hardware_version = hardware_version
         self._slot = slot
         self._timeout = timeout
+        self._socket_timeout = socket_timeout
         self._last_learned_code: str | None = None
         self._last_learned_device: str | None = None
         self._last_learned_command: list[str] | None = None
@@ -140,6 +153,7 @@ class XiaomiMiioIrRemote(RemoteEntity):
             "model": self._model,
             "default_slot": self._slot,
             "learn_timeout": self._timeout,
+            "socket_timeout": self._socket_timeout,
             "last_learned_code": self._last_learned_code,
             "last_learned_device": self._last_learned_device,
             "last_learned_command": self._last_learned_command,

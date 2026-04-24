@@ -8,8 +8,7 @@ remote_learn_command:
   fields:
     timeout:
       name: Timeout
-      description: Maximum time to wait for the infrared command, in seconds.
-      default: 30
+      description: Maximum time to wait for the infrared command, in seconds. Leave empty to use the integration's configured default learn timeout.
       selector:
         number:
           min: 1
@@ -18,8 +17,7 @@ remote_learn_command:
           unit_of_measurement: seconds
     slot:
       name: Slot
-      description: Device storage slot used while learning the command.
-      default: 1
+      description: Device storage slot used while learning the command. Leave empty to use the entity's configured default learn slot.
       selector:
         number:
           min: 1

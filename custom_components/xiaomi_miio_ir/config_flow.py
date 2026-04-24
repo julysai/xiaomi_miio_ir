@@ -12,7 +12,16 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_TIMEOUT, CONF_TOKEN
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import CONF_MODEL, CONF_SLOT, DEFAULT_NAME, DEFAULT_SLOT, DEFAULT_TIMEOUT, DOMAIN
+from .const import (
+    CONF_MODEL,
+    CONF_SLOT,
+    CONF_SOCKET_TIMEOUT,
+    DEFAULT_NAME,
+    DEFAULT_SLOT,
+    DEFAULT_SOCKET_TIMEOUT,
+    DEFAULT_TIMEOUT,
+    DOMAIN,
+)
 from .miio_ir import UnsupportedDeviceError, XiaomiMiioIrDevice
 
 
@@ -38,18 +47,26 @@ def _user_schema(user_input: dict[str, Any] | None = None) -> vol.Schema:
             vol.Optional(
                 CONF_TIMEOUT,
                 default=user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
-            ): int,
+            ): vol.All(int, vol.Range(min=1)),
             vol.Optional(
                 CONF_SLOT,
                 default=user_input.get(CONF_SLOT, DEFAULT_SLOT),
-            ): int,
+            ): vol.All(int, vol.Range(min=1, max=1000000)),
+            vol.Optional(
+                CONF_SOCKET_TIMEOUT,
+                default=user_input.get(CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT),
+            ): vol.All(int, vol.Range(min=1)),
         }
     )
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate user input and return normalized device metadata."""
-    device = XiaomiMiioIrDevice(data[CONF_HOST], data[CONF_TOKEN])
+    device = XiaomiMiioIrDevice(
+        data[CONF_HOST],
+        data[CONF_TOKEN],
+        socket_timeout=data.get(CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT),
+    )
 
     try:
         info = await hass.async_add_executor_job(device.info)
@@ -104,6 +121,9 @@ class XiaomiMiioIrConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_NAME: user_input.get(CONF_NAME, DEFAULT_NAME),
                         CONF_TIMEOUT: user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
                         CONF_SLOT: user_input.get(CONF_SLOT, DEFAULT_SLOT),
+                        CONF_SOCKET_TIMEOUT: user_input.get(
+                            CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT
+                        ),
                         CONF_MODEL: info[CONF_MODEL],
                     }
                 )
@@ -140,6 +160,12 @@ class XiaomiMiioIrOptionsFlow(config_entries.OptionsFlowWithReload):
             CONF_TIMEOUT,
             self._config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
         )
+        current_socket_timeout = self._config_entry.options.get(
+            CONF_SOCKET_TIMEOUT,
+            self._config_entry.data.get(
+                CONF_SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT
+            ),
+        )
 
         return self.async_show_form(
             step_id="init",
@@ -148,6 +174,10 @@ class XiaomiMiioIrOptionsFlow(config_entries.OptionsFlowWithReload):
                     vol.Required(
                         CONF_TIMEOUT,
                         default=current_timeout,
+                    ): vol.All(int, vol.Range(min=1)),
+                    vol.Required(
+                        CONF_SOCKET_TIMEOUT,
+                        default=current_socket_timeout,
                     ): vol.All(int, vol.Range(min=1)),
                 }
             ),

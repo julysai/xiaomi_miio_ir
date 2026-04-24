@@ -8,7 +8,7 @@ from typing import Any
 
 from miio import ChuangmiIr, Device, DeviceException
 
-from .const import KNOWN_IR_MODELS, MIIO_SOCKET_TIMEOUT
+from .const import DEFAULT_SOCKET_TIMEOUT, KNOWN_IR_MODELS
 
 DEFAULT_FREQUENCY = 38400
 MAX_SLOT = 1000000
@@ -33,10 +33,15 @@ class XiaomiMiioIrDevice:
 
     pronto_re = re.compile(ChuangmiIr.PRONTO_RE.pattern, re.IGNORECASE)
 
-    def __init__(self, host: str, token: str) -> None:
+    def __init__(
+        self,
+        host: str,
+        token: str,
+        socket_timeout: int = DEFAULT_SOCKET_TIMEOUT,
+    ) -> None:
         """Initialize the raw miIO client."""
         self.host = host
-        self._device = Device(host, token, timeout=MIIO_SOCKET_TIMEOUT)
+        self._device = Device(host, token, timeout=socket_timeout)
 
     def info(self) -> XiaomiMiioIrInfo:
         """Return basic device info."""

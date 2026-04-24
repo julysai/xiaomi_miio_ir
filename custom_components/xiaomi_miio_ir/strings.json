@@ -9,7 +9,8 @@
           "token": "Token",
           "name": "Name",
           "timeout": "Default learn timeout",
-          "slot": "Default learn slot"
+          "slot": "Default learn slot",
+          "socket_timeout": "miIO socket timeout"
         }
       }
     },
@@ -27,7 +28,8 @@
       "init": {
         "title": "Xiaomi Miio IR options",
         "data": {
-          "timeout": "Default learn timeout"
+          "timeout": "Default learn timeout",
+          "socket_timeout": "miIO socket timeout"
         }
       }
     }
